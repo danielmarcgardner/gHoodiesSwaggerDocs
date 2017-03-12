@@ -1,0 +1,280 @@
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: gSwag
+# during dev, should point to your local machine
+host: localhost:10010
+# basePath prefixes all resource paths
+basePath: /
+#
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+paths:
+  /students:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: students
+    get:
+      summary: Gets all students
+      description: Returns a list containing all students.
+      produces:
+       - application/json
+      # used as the method name of the controller
+      operationId: getStudents
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/StudentList"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    post:
+      summary: Creates a student
+      description: Adds a new student to the students list.
+      produces:
+       - text/plain
+      # used as the method name of the controller
+      operationId: addStudent
+      parameters:
+        - name: student
+          in: body
+          description: The student to create.
+          required: true
+          schema:
+            $ref: "#/definitions/CreateStudent"
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/CreateStudent"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /students/{id}:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: students
+    get:
+      description: Returns a single student.
+      produces:
+       - application/json
+      # used as the method name of the controller
+      operationId: getStudent
+      parameters:
+        - name: id
+          in: path
+          description: Student's id.
+          required: true
+          type: integer
+      responses:
+        "200":
+          description: A single student.
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Student"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    patch:
+      summary: Updates student information
+      description: updates a student record
+      produces:
+        - text/plain
+      # used as the method name of the controller
+      operationId: updateStudent
+      parameters:
+        - name: id
+          in: path
+          description: student id to update
+          required: true
+          type: integer
+
+        - name: student
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/CreateStudent"
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Student"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /students/name/{name}:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: students
+    get:
+      description: Returns a single student.
+      produces:
+       - application/json
+      # used as the method name of the controller
+      operationId: getStudentByName
+      parameters:
+        - name: name
+          in: path
+          description: get a student by name.
+          required: true
+          type: string
+      responses:
+        "200":
+          description: A single student.
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Student"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /cohorts:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: cohorts
+    get:
+      summary: Get a list of cohorts
+      description: Returns a list of all cohorts.
+      produces:
+       - application/json
+      # used as the method name of the controller
+      operationId: getCohorts
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Cohorts"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /cohorts/{gnum}/students:
+    x-swagger-router-controller: cohorts
+    get:
+      description: returns all the students in a cohort.
+      produces:
+       - application/json
+      # used as the method name of the controller
+      operationId: getStudentsByCohort
+      parameters:
+        - name: gnum
+          in: path
+          description: Cohort ID Number
+          required: true
+          type: integer
+      responses:
+        "200":
+          description: Returns all students in a cohort.
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/CohortStudents"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /swagger:
+    x-swagger-pipe: swagger_raw
+# complex objects have schema definitions
+definitions:
+  StudentList:
+    required:
+      - students
+    properties:
+      students:
+        type: array
+        items:
+          $ref: "#/definitions/Student"
+  Student:
+    required:
+      - id
+      - name
+      - email
+      - size
+      - fulfilled
+      - cohort_id
+      - created_at
+      - updated_at
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      email:
+        type: string
+      size:
+        type: string
+      fulfilled:
+        type: boolean
+        default: false
+      cohort_id:
+        type: integer
+      created_at:
+        type: string
+      updated_at:
+        type: string
+  CreateStudent:
+    required:
+      - firstName
+      - lastName
+      - email
+      - cohort_id
+      - size
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      cohort_id:
+        type: integer
+      size:
+        type: string
+  CohortStudents:
+    required:
+      - name
+      - fulfilled
+      - size
+    properties:
+      name:
+        type: string
+      fulfilled:
+        type: boolean
+      size:
+        type: string
+  Cohorts:
+    required:
+      - id
+      - gnum
+    properties:
+      id:
+        type: integer
+      gnum:
+        type: string    
+  ErrorResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
